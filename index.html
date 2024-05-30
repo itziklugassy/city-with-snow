@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Cards CRUD</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            width: 200px; /* Set the desired width */
+            height: 150px; /* Set the desired height */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+        }
+        .card-title {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+        .card-description {
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+        .card-ranking {
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+        .card-air {
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+        .card-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        @keyframes rainbow {
+            0% { border-color: red; }
+            14% { border-color: orange; }
+            28% { border-color: yellow; }
+            42% { border-color: green; }
+            57% { border-color: blue; }
+            71% { border-color: indigo; }
+            85% { border-color: violet; }
+            100% { border-color: red; }
+        }
+        .btn {
+            border: 2px solid;
+            animation: rainbow 5s linear infinite;
+        }
+        /* Snowflake styles */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: fall linear infinite;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Make snowflakes more visible */
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+        }
+        /* Snow accumulation styles */
+        #snow-accumulation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, #fff, transparent);
+            z-index: 10; /* Place it above other elements */
+            height: 0; /* Start with no height */
+            transition: height 0.5s; /* Smooth transition for height change */
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container"></div>
+    <div id="snow-accumulation"></div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const cities = JSON.parse(localStorage.getItem('cities')) || [
+            {
+                name: 'New York',
+                image: 'https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg',
+                description: 'The city that never sleeps.',
+                ranking: 5,
+                air: 8,
+                wikipedia: 'https://en.wikipedia.org/wiki/New_York_City'
+            },
+            {
+                name: 'Toronto',
+                image: 'https://cdn.britannica.com/35/100235-050-CE3936EE/view-CN-Tower-Toronto-skyline-observation-deck.jpg',
+                description: 'The capital city of Ontario.',
+                ranking: 4,
+                air: 7,
+                wikipedia: 'https://en.wikipedia.org/wiki/Toronto'
+            },
+            {
+                name: 'Tel Aviv',
+                image: 'https://i0.wp.com/www.touristisrael.com/wp-content/uploads/2012/12/shutterstock_415012924-scaled.jpg?fit=400%2C266&ssl=1',
+                description: 'The financial and technological hub of Israel.',
+                ranking: 5,
+                air: 6,
+                wikipedia: 'https://en.wikipedia.org/wiki/Tel_Aviv'
+            },
+            {
+                name: 'Jerusalem',
+                image: 'https://i0.wp.com/www.touristisrael.com/wp-content/uploads/2011/02/jerusalem-purple.jpg?resize=1024%2C683&ssl=1',
+                description: 'A city with rich history and cultural significance.',
+                ranking: 5,
+                air: 9,
+                wikipedia: 'https://en.wikipedia.org/wiki/Jerusalem'
+            }
+        ];
+
+        function saveCities() {
+            localStorage.setItem('cities', JSON.stringify(cities));
+        }
+
+        function renderCities() {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            cities.forEach((city, index) => {
+                const cityCard = document.createElement('div');
+                cityCard.className = 'card';
+
+                cityCard.innerHTML = `
+                    <img src="${city.image}" alt="${city.name}">
+                    <div class="card-title">${city.name}</div>
+                    <div class="card-description">${city.description}</div>
+                    <div class="card-ranking">Ranking: ${city.ranking}</div>
+                    <div class="card-air">Air quality: ${city.air}</div>
+                    <div class="card-actions">
+                        <button class="btn btn-warning" onclick="editCity(${index})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteCity(${index})">Delete</button>
+                        <a href="${city.wikipedia}" class="btn btn-info" target="_blank">More info</a>
+                    </div>
+                `;
+
+                app.appendChild(cityCard);
+            });
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'btn btn-primary';
+            addButton.textContent = 'Add City';
+            addButton.onclick = addCity;
+            app.appendChild(addButton);
+        }
+
+        function addCity() {
+            const name = prompt('Enter city name:');
+            const image = prompt('Enter city image URL:');
+            const description = prompt('Enter city description:');
+            const ranking = prompt('Enter city ranking (1-5):');
+            const air = prompt('Enter air quality (1-10):');
+            const wikipedia = prompt('Enter Wikipedia URL:');
+            if (name && image && description && ranking && air && wikipedia) {
+                cities.push({ name, image, description, ranking: parseInt(ranking), air: parseInt(air), wikipedia });
+                saveCities();
+                renderCities();
+            }
+        }
+
+        function editCity(index) {
+            const city = cities[index];
+            const name = prompt('Edit city name:', city.name);
+            const image = prompt('Edit city image URL:', city.image);
+            const description = prompt('Edit city description:', city.description);
+            const ranking = prompt('Edit city ranking (1-5):', city.ranking);
+            const air = prompt('Edit air quality (1-10):', city.air);
+            const wikipedia = prompt('Edit Wikipedia URL:', city.wikipedia);
+            if (name && image && description && ranking && air && wikipedia) {
+                cities[index] = { name, image, description, ranking: parseInt(ranking), air: parseInt(air), wikipedia };
+                saveCities();
+                renderCities();
+            }
+        }
+
+        function deleteCity(index) {
+            if (confirm('Are you sure you want to delete this city?')) {
+                cities.splice(index, 1);
+                saveCities();
+                renderCities();
+            }
+        }
+
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's'; // between 2 and 5 seconds
+            snowflake.style.width = snowflake.style.height = Math.random() * 10 + 10 + 'px'; // between 10px and 20px
+
+            // Track if the snowflake has reached the bottom
+            snowflake.addEventListener('animationend', () => {
+                // Increase the height of the snow accumulation element
+                const snowAccumulation = document.getElementById('snow-accumulation');
+                const currentHeight = parseFloat(window.getComputedStyle(snowAccumulation).height);
+                if (currentHeight < window.innerHeight) {
+                    snowAccumulation.style.height = (currentHeight + 5) + 'px'; // Adjust height increment as needed
+                }
+                snowflake.remove();
+            });
+
+            document.body.appendChild(snowflake);
+        }
+
+        function createSnow() {
+            setInterval(createSnowflake, 200); // Create a snowflake every 200ms
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCities();
+            createSnow();
+        });
+    </script>
+</body>
+</html>
