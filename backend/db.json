@@ -1,0 +1,12 @@
+{
+  "cities": [
+    {
+      "id": "4",
+      "name": "Jerusalem",
+      "image": "https://i0.wp.com/www.touristisrael.com/wp-content/uploads/2011/02/jerusalem-purple.jpg?resize=1024%2C683&ssl=1",
+      "description": "A city with rich history and cultural significance.",
+      "ranking": 5,
+      "air": 9
+    }
+  ]
+}
